@@ -1,0 +1,24 @@
+table inet proxy_killswitch {
+    chain output {
+        type filter hook output priority filter; policy accept;
+
+        # loopback (в т.ч. DNS stub 127.0.0.53)
+        oifname "lo" accept
+
+        # весь туннельный трафик
+        oifname "singtun0" accept
+
+        # SSH-туннель до VPS (релей)
+        ip daddr VPS_IP accept
+
+        # DHCP (получение/продление адреса)
+        udp dport { 67, 68 } accept
+
+        # локальная подсеть (шлюз/DHCP-сервер).
+        # ЗАМЕНИТЬ на свою: `ip -brief addr` → сеть активного интерфейса.
+        ip daddr 192.168.1.0/24 accept
+
+        # всё остальное через физический интерфейс — блокируем (нет утечки)
+        drop
+    }
+}

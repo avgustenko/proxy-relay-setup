@@ -1,0 +1,22 @@
+[Unit]
+Description=SSH-туннель до прокси через VPS (релей)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -N -T \
+  -o ExitOnForwardFailure=yes \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -o ConnectTimeout=15 \
+  -o BatchMode=yes \
+  -o StrictHostKeyChecking=accept-new \
+  -i /home/ИМЯ/.ssh/relay_ed25519 \
+  -L 127.0.0.1:1080:ПРОКСИ_ХОСТ:ПРОКСИ_ПОРТ \
+  VPS_USER@VPS_IP
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

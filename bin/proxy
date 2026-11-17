@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# proxy — управление туннелем sing-box.
+# Работает в любом шелле (bash/zsh/скрипты), не зависит от .bashrc.
+#
+#   proxy on       включить прокси
+#   proxy off      выключить прокси
+#   proxy restart  перезапустить
+#   proxy status   статус сервиса
+#   proxy log      живые логи
+#   proxy ip       показать текущий внешний IP
+set -u
+
+SVC=sing-box
+
+usage() {
+  echo "используй: proxy on|off|restart|status|log|ip" >&2
+  exit 1
+}
+
+case "${1:-}" in
+  on)
+    sudo -n systemctl start "$SVC" && systemctl is-active "$SVC"
+    ;;
+  off)
+    sudo -n systemctl stop "$SVC" && systemctl is-active "$SVC"
+    ;;
+  restart)
+    sudo -n systemctl restart "$SVC" && systemctl is-active "$SVC"
+    ;;
+  status)
+    systemctl status "$SVC" --no-pager
+    ;;
+  log)
+    sudo -n journalctl -u "$SVC" -n 100 --no-pager -f || journalctl --user -u "$SVC" -n 100 --no-pager -f
+    ;;
+  ip)
+    curl -s --max-time 10 https://ifconfig.me || true
+    echo
+    ;;
+  *)
+    usage
+    ;;
+esac
